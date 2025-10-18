@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Set Budget{% endblock %}
+{% block contents %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Set New Budget</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-select") }}
+                        {% if form.category.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.category.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.amount.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            {{ form.amount(class="form-control", placeholder="0.00", step="0.01", min="0.01", inputmode="decimal") }}
+                        </div>
+                        {% if form.amount.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.amount.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('budgets.list_budgets') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Budget Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Budget Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Set realistic budget amounts based on your income</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Review and adjust your budgets monthly</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Track your spending to stay within budget</li>
+                    <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Consider the 50/30/20 rule: 50% needs, 30% wants, 20% savings</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

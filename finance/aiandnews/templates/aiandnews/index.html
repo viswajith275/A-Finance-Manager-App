@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}AI Insights & Financial News - My Finance App{% endblock %}
+
+{% block contents %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-robot text-primary me-2"></i>AI Insights & Financial News
+            </h1>
+            <button class="btn btn-outline-primary" onclick="refreshInsights()">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- AI Notifications Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bell me-2"></i>AI Financial Insights
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ai_notifications and ai_notifications.notifications %}
+                    <div class="row">
+                        {% for notification in ai_notifications.notifications %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="alert alert-info border-0 shadow-sm h-100">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0 me-3">
+                                        <i class="fas fa-lightbulb text-warning fa-lg"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="alert-heading mb-2">Smart Insight</h6>
+                                        <p class="mb-0 small">{{ notification }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No AI insights available</h5>
+                        <p class="text-muted">Add some transactions and budgets to get personalized insights!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial News Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-newspaper me-2"></i>Latest Financial News
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if get_news and get_news|length > 0 %}
+                    <div class="row">
+                        {% for article in get_news %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-start justify-content-between mb-2">
+                                        <span class="badge {% if article.severity == 'high' %}bg-danger{% elif article.severity == 'medium' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ article.severity|capitalize }}</span>
+                                        <small class="text-muted">{{ article.source }}</small>
+                                    </div>
+                                    <h6 class="card-title">{{ article.message }}</h6>
+                                    {% if article.published_at %}
+                                    <small class="text-muted mb-2">{{ article.published_at }}</small>
+                                    {% endif %}
+                                    <div class="mt-auto">
+                                        <a href="{{ article.url }}" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+                                            Read More <i class="fas fa-external-link-alt ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No news available</h5>
+                        <p class="text-muted">Financial news will appear here when available.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus me-2"></i>Add Transaction
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('budgets.add_budgets') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-chart-pie me-2"></i>Set Budget
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('transactions.list_transaction') }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-list me-2"></i>View Transactions
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('dashboard.dashboards') }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner (hidden by default) -->
+<div id="loadingSpinner" class="text-center py-5" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Refreshing insights...</p>
+</div>
+
+<script>
+function refreshInsights() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) {
+        spinner.style.display = 'block';
+    }
+    // Quick reload without hiding main content to avoid flicker/disappearance
+    setTimeout(() => {
+        window.location.reload();
+    }, 100);
+}
+</script>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.alert {
+    transition: all 0.3s ease;
+}
+
+.alert:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .alert {
+    animation: fadeIn 0.5s ease-out;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Edit Transaction{% endblock %}
+{% block contents %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Transaction</h4>
+            </div>
+            <div class="card-body">
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.type.label(class="form-label") }}
+                                {{ form.type(class="form-select", id="transaction-type") }}
+                                {% if form.type.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.type.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select", id="transaction-category") }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.category.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.amount.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            {{ form.amount(class="form-control", placeholder="0.00", step="0.01", min="0.01", inputmode="decimal") }}
+                        </div>
+                        {% if form.amount.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.amount.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows="3", placeholder="Optional description...") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.description.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_recurring(class="form-check-input") }}
+                            {{ form.is_recurring.label(class="form-check-label") }}
+                        </div>
+                        {% if form.is_recurring.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.is_recurring.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Current Transaction:</strong> 
+                        {{ transaction.type.title() }} of ${{ "%.2f"|format(transaction.amount) }} 
+                        in {{ transaction.category.title() if transaction.category else 'N/A' }}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('transactions.list_transaction') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        {{ form.submit(class="btn btn-warning text-dark") }}
+                    </div>
+</form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('transaction-type');
+    const categorySelect = document.getElementById('transaction-category');
+    
+    // Store the current category value to preserve it during updates
+    const currentCategory = categorySelect.value;
+    
+    // Category options for different transaction types
+    const categoryOptions = {
+        'income': [
+            {value: 'salary', text: 'Salary'},
+            {value: 'freelance', text: 'Freelance'},
+            {value: 'business', text: 'Business'},
+            {value: 'investment', text: 'Investment Returns'},
+            {value: 'rental', text: 'Rental Income'},
+            {value: 'bonus', text: 'Bonus'},
+            {value: 'gift', text: 'Gift/Allowance'},
+            {value: 'other_income', text: 'Other Income'}
+        ],
+        'expense': [
+            {value: 'food', text: 'Food & Dining'},
+            {value: 'rent', text: 'Rent/Mortgage'},
+            {value: 'utilities', text: 'Utilities'},
+            {value: 'transport', text: 'Transportation'},
+            {value: 'entertainment', text: 'Entertainment'},
+            {value: 'shopping', text: 'Shopping'},
+            {value: 'healthcare', text: 'Healthcare'},
+            {value: 'education', text: 'Education'},
+            {value: 'insurance', text: 'Insurance'},
+            {value: 'other_expense', text: 'Other Expense'}
+        ]
+    };
+    
+    function updateCategories(preserveSelection = false) {
+        const selectedType = typeSelect.value;
+        const options = categoryOptions[selectedType] || categoryOptions['expense'];
+        const previousValue = preserveSelection ? categorySelect.value : null;
+        
+        // Clear existing options
+        categorySelect.innerHTML = '';
+        
+        // Add new options
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.text;
+            if (preserveSelection && option.value === previousValue) {
+                optionElement.selected = true;
+            }
+            categorySelect.appendChild(optionElement);
+        });
+    }
+    
+    // Update categories when type changes
+    typeSelect.addEventListener('change', function() {
+        updateCategories(false);
+    });
+    
+    // Initialize categories on page load (preserve existing selection)
+    updateCategories(true);
+});
+</script>
+
+{% endblock %}
